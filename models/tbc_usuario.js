@@ -10,7 +10,10 @@ module.exports = (sequelize, DataTypes) => {
      * The `models/index` file will call this method automatically.
      */
     static associate(models) {
-      // define association here
+      this.hasMany(models.tbb_carrito, {
+        foreignKey: 'id_usuario',
+        as: 'carritos'
+      });
     }
   }
   tbc_usuario.init({
@@ -24,6 +27,7 @@ module.exports = (sequelize, DataTypes) => {
   }, {
     sequelize,
     modelName: 'tbc_usuario',
+    tableName: 'tbc_usuarios'
   });
   return tbc_usuario;
 };
