@@ -12,6 +12,8 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.get('/', (req, res) => res.status(200).json({ message: 'Bienvenido a mi API de tienda virtual' 
 }));
 
+require('./routes/route_categorias')(app);
+
 const port = parseInt(process.env.PORT,10) || 8000;
 app.set('port', port )
 
