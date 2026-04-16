@@ -1,5 +1,7 @@
 const Sequelize = require('sequelize');
+const { Op } = require('sequelize');
 const producto = require('../models').tbb_producto;
+const db = require('../models');
 
 module.exports = {
     create(req, res){
@@ -11,20 +13,32 @@ module.exports = {
             stock: req.body.stock || 0,
             id_categoria: req.body.id_categoria,
         })
-        .then(producto => res.status(200).send(producto))
+        .then(productoCreado => res.status(200).send(productoCreado))
         .catch(error => res.status(400).send(error));
     },
     list(_, res){
-        return producto.findAll()
+        return producto.findAll({
+            include: [{
+                model: db.tbc_categoria,
+                as: 'categoria'
+            }]
+        })
         .then(productos => res.status(200).send(productos))
         .catch(error => res.status(400).send(error));
     },
     find(req, res){
         const id = req.params.id;
-        const nombre = req.params.nombre || req.query.nombre;
+        const nombre = req.query.nombre || req.query.name;
+        const id_categoria = req.query.id_categoria;
 
-        if (id) {
-            return producto.findByPk(id)
+        // Búsqueda por ID
+        if (id && !isNaN(id)) {
+            return producto.findByPk(id, {
+                include: [{
+                    model: db.tbc_categoria,
+                    as: 'categoria'
+                }]
+            })
             .then(productoItem => {
                 if (!productoItem) {
                     return res.status(404).send({message: 'Producto no encontrado'});
@@ -34,15 +48,27 @@ module.exports = {
             .catch(error => res.status(400).send(error));
         }
 
+        const where = {};
         if (nombre) {
+            where.nombre = { [Op.like]: `%${nombre}%` };
+        }
+        if (id_categoria) {
+            where.id_categoria = id_categoria;
+        }
+
+        if (nombre || id_categoria) {
             return producto.findAll({
-                where: { nombre }
+                where,
+                include: [{
+                    model: db.tbc_categoria,
+                    as: 'categoria'
+                }]
             })
             .then(productos => res.status(200).send(productos))
             .catch(error => res.status(400).send(error));
         }
 
-        return res.status(400).send({message: 'Debe proporcionar id o nombre para buscar'});
+        return res.status(400).send({message: 'Debe proporcionar id, nombre o id_categoria para buscar'});
     },
     update(req, res){
         const id = req.params.id;

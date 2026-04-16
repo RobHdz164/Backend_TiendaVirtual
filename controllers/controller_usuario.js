@@ -23,9 +23,12 @@ module.exports = {
     },
     find(req, res){
         const id = req.params.id;
-        const email = req.params.email || req.query.email;
+        const nombre = req.query.nombre || req.query.name;
+        const email = req.query.email;
+        const { Op } = require('sequelize');
 
-        if (id) {
+        // Búsqueda por ID
+        if (id && !isNaN(id)) {
             return usuario.findByPk(id)
             .then(usuarioItem => {
                 if (!usuarioItem) {
@@ -36,15 +39,21 @@ module.exports = {
             .catch(error => res.status(400).send(error));
         }
 
+        const where = {};
+        if (nombre) {
+            where.nombre = { [Op.like]: `%${nombre}%` };
+        }
         if (email) {
-            return usuario.findAll({
-                where: { email }
-            })
+            where.email = { [Op.like]: `%${email}%` };
+        }
+
+        if (nombre || email) {
+            return usuario.findAll({ where })
             .then(usuarios => res.status(200).send(usuarios))
             .catch(error => res.status(400).send(error));
         }
 
-        return res.status(400).send({message: 'Debe proporcionar id o email para buscar'});
+        return res.status(400).send({message: 'Debe proporcionar id, nombre o email para buscar'});
     },
     update(req, res){
         const id = req.params.id;

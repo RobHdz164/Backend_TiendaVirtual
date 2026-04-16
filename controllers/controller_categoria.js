@@ -17,10 +17,12 @@ module.exports = {
         .catch(error => res.status(400).send(error));
     },
     find(req, res){
+        const { Op } = require('sequelize');
         const id = req.params.id;
-        const nombre = req.params.nombre || req.query.nombre;
+        const nombre = req.query.nombre || req.query.name;
 
-        if (id) {
+        // Búsqueda por ID
+        if (id && !isNaN(id)) {
             return categoria.findByPk(id)
             .then(categoriaItem => {
                 if (!categoriaItem) {
@@ -31,9 +33,10 @@ module.exports = {
             .catch(error => res.status(400).send(error));
         }
 
+        // Búsqueda por nombre
         if (nombre) {
             return categoria.findAll({
-                where: { nombre }
+                where: { nombre: { [Op.like]: `%${nombre}%` } }
             })
             .then(categorias => res.status(200).send(categorias))
             .catch(error => res.status(400).send(error));
