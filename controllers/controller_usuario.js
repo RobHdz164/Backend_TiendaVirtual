@@ -88,4 +88,34 @@ module.exports = {
         })
         .catch(error => res.status(400).send(error));
     },
+    login(req, res){
+        const { email, password } = req.body;
+
+        if (!email || !password) {
+            return res.status(400).send({ message: 'Email y contraseña son requeridos' });
+        }
+
+        return usuario.findOne({ where: { email } })
+            .then(usuarioItem => {
+                if (!usuarioItem) {
+                    return res.status(401).send({ message: 'Credenciales inválidas' });
+                }
+
+                // Comparar contraseñas
+                if (usuarioItem.password !== password) {
+                    return res.status(401).send({ message: 'Credenciales inválidas' });
+                }
+
+                // Generar JWT
+                const jwt = require('jsonwebtoken');
+                const token = jwt.sign(
+                    { id: usuarioItem.id, email: usuarioItem.email, rol: usuarioItem.rol },
+                    process.env.JWT_SECRET || 'tu_clave_secreta_aqui',
+                    { expiresIn: '24h' }
+                );
+
+                return res.status(200).send({ token });
+            })
+            .catch(error => res.status(500).send(error));
+    },
 };
