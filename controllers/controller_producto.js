@@ -12,6 +12,7 @@ module.exports = {
             precio: req.body.precio,
             stock: req.body.stock || 0,
             id_categoria: req.body.id_categoria,
+            imagenes: req.body.imagenes,
         })
         .then(productoCreado => res.status(200).send(productoCreado))
         .catch(error => res.status(400).send(error));
@@ -83,6 +84,7 @@ module.exports = {
                 precio: req.body.precio,
                 stock: req.body.stock,
                 id_categoria: req.body.id_categoria,
+                imagenes: req.body.imagenes,
             })
             .then(updated => res.status(200).send(updated))
             .catch(error => res.status(400).send(error));
